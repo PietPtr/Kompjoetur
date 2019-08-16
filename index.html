@@ -1,0 +1,44 @@
+
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
+
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <style>
+    body {
+        background-color: black;
+    }
+    div {
+        width: 600px;
+        margin: 5em auto;
+        padding: 50px;
+        background-color: #black;
+        border-radius: 1em;
+        text-align: center;
+    }
+    canvas {
+        /*border: 1px solid white;*/
+        image-rendering: optimizeSpeed;             /* Older versions of FF          */
+        image-rendering: -moz-crisp-edges;          /* FF 6.0+                       */
+        image-rendering: -webkit-optimize-contrast; /* Safari                        */
+        image-rendering: -o-crisp-edges;            /* OS X & Windows Opera (12.02+) */
+        image-rendering: pixelated;                 /* Awesome future-browsers       */
+        -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
+    }
+    body, html {
+        margin: 0;
+    }
+    </style>
+    <script src='consts.js'></script>
+    <script src='util.js'></script>
+    <script src='Core.js'></script>
+</head>
+
+<body>
+    <script src='main.js'></script>
+</body>
+</html>
