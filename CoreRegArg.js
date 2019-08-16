@@ -15,16 +15,8 @@ a: rot left reg with arg&0x0f and rot right with arg&0xf0
 b: save reg to arg
 c: push reg to stack
 d: pop reg to stack
-e: write reg to queue to connection arg
-f: read from connection arg to reg
-
-arg is:
-    if argswitch bit = 0: immediate value
-    if argswitch bit = 1:
-        if arg < 8:
-            register number arg
-        else:
-            address arg
+e: write to outbus queue
+f: read from outbus queue
 */
 
 const INS_NAMES = [
@@ -48,9 +40,8 @@ const INS_NAMES = [
 
 
 class Core {
-    constructor(name) {
+    constructor() {
         this.MEM_SIZE = 256;
-        this.name = name;
 
         this.state = {
             memory: new Array(this.MEM_SIZE).fill(0x00),
@@ -69,14 +60,7 @@ class Core {
         let opcode = instruction >> 4 & 0b1111;
         let argswitch = instruction >> 3 & 1;
         let register = instruction & 0b111;
-        let argv = argument;
-        if (argswitch == 1) {
-            if (argument < 8) {
-                argv = this.state.registers[argument];
-            } else {
-                argv = this.state.memory[argument];
-            }
-        }
+        let argv = argswitch ? this.state.memory[argument] : argument;
         let regv = this.state.registers[register];
 
         let increment = true;
@@ -121,10 +105,10 @@ class Core {
                 break;
             case 0xc:
                 this.state.memory[this.state.memory[0xff]] = regv;
-                this.state.memory[0xff] = (this.state.memory[0xff] - 1) & 0xff;
+                this.state.memory[0xff]--;
                 break;
             case 0xd:
-                this.state.memory[0xff] = (this.state.memory[0xff] + 1) & 0xff;
+                this.state.memory[0xff]++;
                 this.state.registers[register] = this.state.memory[this.state.memory[0xff]];
                 break;
             case 0xe:
@@ -134,10 +118,10 @@ class Core {
                 this.state.registers[register] = this.in.pop() || 0;
                 break;
             default:
-                break;
+
         }
 
-        console.log(this.state.pc, hex(instruction), INS_NAMES[opcode], hex(regv), hex(argv))
+        console.log(this.state.pc, instruction.toString(16), INS_NAMES[opcode], regv, argv)
 
         printBytes(this.state.registers);
         printBytes(this.state.memory.slice(0xf0));
@@ -152,12 +136,109 @@ class Core {
             this.step();
         }
     }
+}
 
-    dump() {
-        console.log("PC:", hex(this.state.pc))
-        console.log("Registers:")
-        printBytes(this.state.registers);
-        console.log("Memory:");
-        printBytes(this.state.memory);
+
+
+const NAME_TO_OPCODE = {
+    'nop': 0x0,
+    'ld': 0x1,
+    'add': 0x2,
+    'sub': 0x3,
+    'jump': 0x4,
+    'and': 0x5,
+    'or': 0x6,
+    'not': 0x7,
+    'xor': 0x8,
+    'shift': 0x9,
+    'rot': 0xa,
+    'save': 0xb,
+    'push': 0xc,
+    'pop': 0xd,
+    'write': 0xe,
+    'read': 0xf
+}
+
+function assemble(program) {
+    console.log(program)
+
+    // remove trailing and leading newlines
+    let lines = program.replace(/^\s+|\s+$/g, '').split('\n');
+
+    let symbols = {};
+    let instructions = [];
+
+    let counter = 0;
+    for (let i = 0; i < lines.length; i++) {
+        // remove comments
+        lines[i] = lines[i].split(';')[0]
+
+        line = lines[i];
+
+        // check for symbols
+        if (line.startsWith('>')) {
+            let symbol = line.split('>');
+            if (symbol.length <= 1 || !symbol[1]) {
+                console.error('ERROR: invalid symbol name at line', i, ':', line);
+                return [];
+            } else {
+                symbol = symbol[1];
+                symbols[symbol] = counter;
+            }
+        } else {
+            instructions.push(line);
+            counter += 2;
+        }
     }
+
+    let assembled = [];
+
+    for (let i = 0; i < instructions.length; i++) {
+        let instruction = instructions[i];
+
+        let split = instruction.split(' ').filter(element => element != '');
+
+        let name = split[0];
+        if (name == 'nop') {
+            assembled.push(0x00);
+            assembled.push(0x00);
+            continue;
+        }
+        let reg = parseInt(split[1][3], 10);
+        let argument = split[2];
+        let argswitch = 0;
+
+        if (!(name in ['push', 'pop'])) {
+            if (argument.startsWith('>')) {
+                argument = argument.split('>')[1];
+                if (argument in symbols) {
+                    argument = symbols[argument];
+                } else {
+                    console.error('ERROR: cannot find symbol', argument);
+                    return [];
+                }
+            } else if (argument.startsWith('$')) {
+                argument = parseInt(argument.split('$')[1], 16);
+                argswitch = 1;
+            } else {
+                argument = parseInt(argument, 16);
+            }
+        }
+
+        let opcode = NAME_TO_OPCODE[name];
+        if (!opcode) {
+            console.error('ERROR: cannot find opcode for name', name);
+            return [];
+        }
+
+        let ins =
+            opcode << 4 |
+            argswitch << 3 |
+            reg
+
+        assembled.push(ins);
+        assembled.push(argument);
+    }
+
+    return assembled;
 }

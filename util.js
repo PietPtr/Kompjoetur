@@ -74,3 +74,25 @@ function randomMinMax(min, max) {
 function printBytes(bytes) {
     console.log(bytes.map(b => b.toString(16).padStart(2, '0')).join(' '));
 }
+
+function hex(num, len=2) {
+    return '0x' + num.toString(16).padStart(len, '0');
+}
+
+function randomId() {
+    return new Array(...(Math.floor(Math.random() * 65536).toString(10))).map(digit =>
+        String.fromCharCode(97+parseInt(digit))).join('');
+}
+
+function coordToIndex4D(x, y, z, q, Y, Z, Q) {
+    return x * (Y*Z*Q) + y * (Z*Q) + z * Q + q;
+}
+
+function indexToCoord4D(index, Y, Z, Q) {
+    return {
+        x: Math.floor(index / (Y*Z*Q)),
+        y: Math.floor(index / (Z*Q)) % Y,
+        z: Math.floor(index / Q) % Z,
+        q: index % Q
+    }
+}

@@ -29,7 +29,50 @@ let pushpop =
     pop     reg2
 `
 
-let program = assemble(pushpop);
+let newreg =
+`
+    ld      reg0    0x05
+    ld      reg1    0x06
+    add     reg0    reg1
+`
+
+let accesslow =
+`
+    ld      reg0    0x04
+    save    reg0    0xaa
+    ld      reg1    0xbb
+    save    reg0   $0xaa
+`
+
+let add =
+`
+(main
+    (define a 0)
+    (define b 0)
+    (while (!= b 6) (
+        (define b (+ b 1))
+        (define a (+ a 7))
+    ))
+)
+`
+/*
+(if (!= a b) (
+    (define c 204)
+) (
+    (define c 187)
+))
+
+
+
+*/
+//(define b (+ 5 6)) (define c b) (+ b (+ a 2)) )
+
+let program =
+    assemble(
+    compile(
+    parse(
+    tokenize(
+        add))));
 
 
 for (let i = 0; i < program.length; i++) {
