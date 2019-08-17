@@ -52,7 +52,7 @@ function compile(ast, returnVarMap=false) {
             `jump reg5 >end\n`
         )
 
-        let memAddr = (instructions.split('\n').filter(ins => !ins.startsWith('>')).length) * 2;
+        let memAddr = (instructions.split('\n').filter(ins => !ins.startsWith('>')).length - 1) * 2;
         let memMarkers = [];
         for (let instr of instructions.split('\n')) {
             let argument = instr.split(' ').filter(e => e != ' ')[2]
@@ -174,6 +174,26 @@ const funcs = {
             `${left}` +
             `pop reg1\n` +
             `sub reg0 reg1\n`
+        );
+    },
+    '*': (ast) => {
+        let left = compileExpression(ast[1]);
+        let right = compileExpression(ast[2]);
+        let id = randomId();
+        return (
+            `${right}` +
+            `push reg0\n` +
+            `${left}` +
+            `pop reg1\n` +
+            `sub reg1 0x01\n` +
+            `ld reg2 reg0` +
+            `ld reg6 0x01\n` +
+            `jump reg6 >end${id}\n` +
+            `>start${id}\n` +
+            `add reg0 reg2\n` +
+            `sub reg1 0x01\n` +
+            `>end${id}\n` +
+            `jump reg1 >start${id}\n`
         );
     },
     '==': (ast) => {

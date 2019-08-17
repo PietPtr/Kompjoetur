@@ -55,6 +55,13 @@ let add =
 )
 `
 
+add =
+`
+(main
+    (define a (* 7 6))
+)
+`
+
 const memElement = document.getElementById('memdisplay');
 const registerElement = document.getElementById('registerdisplay');
 const pcElement = document.getElementById('pc');
