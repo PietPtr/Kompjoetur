@@ -71,8 +71,23 @@ function randomMinMax(min, max) {
     return Math.random() * (max - min) + min;
 }
 
+function bytesToString(bytes) {
+    return bytes.map(b => b.toString(16).padStart(2, '0')).join(' ')
+}
+
 function printBytes(bytes) {
-    console.log(bytes.map(b => b.toString(16).padStart(2, '0')).join(' '));
+    console.log(bytesToString(bytes));
+}
+
+function byteMatrixToString(bytes, width) {
+    let rows = [];
+    for (let i = 0; i < Math.floor(bytes.length / width); i++) {
+        let row = bytes.slice(i*width, (i+1)*width);
+        let rowstr = `${hex(i*width)} - ${bytesToString(row)}`;
+        rows.push(rowstr);
+    }
+
+    return rows.join('\n');
 }
 
 function hex(num, len=2) {

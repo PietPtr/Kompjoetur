@@ -1,6 +1,5 @@
 
 
-let core = new Core();
 
 let prog =
 `
@@ -55,26 +54,65 @@ let add =
     ))
 )
 `
-/*
-(if (!= a b) (
-    (define c 204)
-) (
-    (define c 187)
-))
 
+const memElement = document.getElementById('memdisplay');
+const registerElement = document.getElementById('registerdisplay');
+const pcElement = document.getElementById('pc');
+const speedometer = document.getElementById('speedometer');
+const programElement = document.getElementById('program');
+const assemblyElement = document.getElementById('assembly');
+const errorElement = document.getElementById('error');
+const varMapElement = document.getElementById('varmap');
 
+let core = null;
+let varMap = null;
 
-*/
-//(define b (+ 5 6)) (define c b) (+ b (+ a 2)) )
+function setup(program) {
+    clearTimeout(timer);
 
-let program =
-    assemble(
-    compile(
-    parse(
-    tokenize(
-        add))));
+    core = new Core();
 
+    let tokens = tokenize(program);
+    let ast = parse(tokens);
+    let compileResult = compile(ast, true);
+    let assembly = compileResult.instructions;
+    let code = assemble(assembly);
+    varMap = compileResult.varMap;
 
-for (let i = 0; i < program.length; i++) {
-    core.state.memory[i] = program[i];
+    for (let i = 0; i < code.length; i++) {
+        core.state.memory[i] = code[i];
+    }
+
+    programElement.innerHTML = program;
+    assemblyElement.innerHTML = prettier(assembly);
+
+    update();
 }
+
+function update() {
+    core.step_show(1, memElement, registerElement, pcElement, varMapElement, varMap);
+
+    timer = setTimeout(update, speed);
+}
+
+function setSpeed(value) {
+    let newSpeed = Math.round(2 ** parseFloat(value));
+    speedometer.innerHTML = newSpeed + ' ms/step';
+    speed = newSpeed;
+}
+
+function compileTextarea() {
+    try {
+        setup(programElement.value);
+        error.innerHTML = '';
+    } catch (e) {
+        error.innerHTML = e
+    }
+}
+
+
+let speed = 10;
+let timer = null;
+
+setSpeed(speed);
+setup(add);

@@ -106,3 +106,31 @@ function assemble(program) {
 
     return assembled;
 }
+
+
+function prettier(assembly) {
+    let pretty = [];
+    let split = assembly.split('\n');
+    for (let line of split) {
+        if (line.startsWith('>')) {
+            pretty.push('\n');
+            pretty.push(line);
+        } else {
+            let words = line.split(' ');
+            if (words.length == 1) {
+                continue;
+            }
+            let newLine = words[0].padEnd(8) + words[1].padEnd(8);
+            if (words[2]) {
+                if (words[2].startsWith('$') || words[2].startsWith('>')) {
+                    newLine = newLine.slice(0, newLine.length-1);
+
+                }
+                newLine += words[2];
+            }
+            pretty.push(newLine);
+        }
+    }
+
+    return pretty.join('\n')
+}

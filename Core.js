@@ -137,10 +137,10 @@ class Core {
                 break;
         }
 
-        console.log(this.state.pc, hex(instruction), INS_NAMES[opcode], hex(regv), hex(argv))
-
-        printBytes(this.state.registers);
-        printBytes(this.state.memory.slice(0xf0));
+        // console.log(this.state.pc, hex(instruction), INS_NAMES[opcode], hex(regv), hex(argv))
+        //
+        // printBytes(this.state.registers);
+        // printBytes(this.state.memory.slice(0xf0));
 
         if (increment) {
             this.state.pc = (this.state.pc + 2) % this.MEM_SIZE;
@@ -151,6 +151,23 @@ class Core {
         for (let i = 0; i < amount; i++) {
             this.step();
         }
+    }
+
+    step_show(n=1, memoryElement, registerElement, pcElement, varMapElement, varMap) {
+        let memstr = byteMatrixToString(this.state.memory, 16);
+        let pc = (this.state.pc) * 3;
+        let ustart = pc + 7 + Math.floor(this.state.pc / 16) * 7;
+        let uend = pc + 12 + Math.floor(this.state.pc / 16) * 7;
+        memstr = memstr.slice(0, ustart) + '<u>' + memstr.slice(ustart, uend) + '</u>' + memstr.slice(uend);
+        memoryElement.innerHTML = memstr;
+        registerElement.innerHTML = bytesToString(this.state.registers);
+        pcElement.innerHTML = hex(this.state.pc);
+        varMapElement.innerHTML = Object.keys(varMap).map(variable => {
+            let addr = varMap[variable]
+            return `${variable}@${hex(addr)}: ${core.state.memory[addr]}`;
+        }).join('\n');
+
+        this.step_n(n);
     }
 
     dump() {

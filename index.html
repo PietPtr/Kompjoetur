@@ -12,14 +12,6 @@
     body {
         background-color: black;
     }
-    div {
-        width: 600px;
-        margin: 5em auto;
-        padding: 50px;
-        background-color: #black;
-        border-radius: 1em;
-        text-align: center;
-    }
     canvas {
         /*border: 1px solid white;*/
         image-rendering: optimizeSpeed;             /* Older versions of FF          */
@@ -29,8 +21,42 @@
         image-rendering: pixelated;                 /* Awesome future-browsers       */
         -ms-interpolation-mode: nearest-neighbor;   /* IE                            */
     }
+    .memory {
+        color: #00ff00;
+        font-family: monospace;
+        text-align: left;
+        font-size: 19px;
+        font-weight: lighter;
+        width: 540px;
+        border: 1px solid #00ff00;
+        padding: 10px;
+        white-space: pre-wrap;
+        flex-grow: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .editor {
+        background-color: black;
+        color: #00ff00;
+        border: 1px solid #777777;
+        font-family: monospace;
+    }
+    .small {
+        font-size: 14px;
+    }
+    .error {
+        color: #ff0000;
+    }
+    .layout {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
     body, html {
         margin: 0;
+    }
+    p {
+        margin: 5px;
     }
     </style>
     <script src='consts.js'></script>
@@ -42,6 +68,36 @@
 </head>
 
 <body>
+    <div class='layout'>
+        <div class="memory">
+            <p>Memory</p>
+            <p class="small" id="memdisplay"></p>
+        </div>
+        <div class="memory">
+            <p>Registers</p>
+            <p id="registerdisplay"></p>
+            <p>Program counter</p>
+            <p id="pc"></p>
+            <p>Variable map</p>
+            <p id="varmap"></p>
+        </div>
+        <div class="memory">
+            <p>Source code</p>
+            <!-- <p id="program"></p> -->
+            <textarea class="editor" rows="30" cols="50" id="program"></textarea>
+            <button class="editor" onclick="compileTextarea()">Compile, reset, run</button>
+            <p id='error' class='error'></p>
+        </div>
+        <div class="memory">
+            <p>Assembly</p>
+            <p class="small" id="assembly"></p>
+        </div>
+        <div class="memory">
+            <p>Controls</p>
+            Speed: <input type="range" step="0.01" min="1" max="16" value="10" class="slider" onchange="setSpeed(this.value)"><p id='speedometer'>ms/step</p>
+        </div>
+    </div>
+
     <script src='main.js'></script>
 </body>
 </html>

@@ -1,6 +1,5 @@
 
 function tokenize(program) {
-    console.log(program);
     return program.trim().replace(/\(/g, ' ( ').replace(/\)/g, ' ) ').split(' ').filter(token => {
         return token != "" && token != '\n'
     }).map(token => token.trim());
@@ -36,7 +35,7 @@ function atom(token) {
     }
 }
 
-function compile(ast) {
+function compile(ast, returnVarMap=false) {
     if (ast[0] == 'main') {
         let instructions =
             `ld reg0 0xfe\n` +
@@ -50,7 +49,6 @@ function compile(ast) {
         instructions += (
             `ld reg5 0xaf\n` +
             `>end\n` +
-            // `nop\n` +
             `jump reg5 >end\n`
         )
 
@@ -72,8 +70,6 @@ function compile(ast) {
             }
         }
 
-        console.log(varMap);
-
         for (let variable of memMarkers) {
             if (variable.startsWith('VAR_')) {
                 let re = new RegExp(variable, "g");
@@ -84,7 +80,12 @@ function compile(ast) {
             }
         }
 
-        console.log(instructions, environment)
+        if (returnVarMap) {
+            return {
+                instructions: instructions,
+                varMap: varMap
+            }
+        }
 
         return instructions;
 
@@ -105,7 +106,6 @@ function compileStatement(ast, env) {
     switch (ast[0]) {
         case 'define':
             let value = compileExpression(ast[2]);
-            console.log('------------\n', value);
             return (
                 value +
                 `save reg0 VAR_${ast[1]}\n`
@@ -144,7 +144,6 @@ function compileStatement(ast, env) {
 }
 
 function compileExpression(ast, env) {
-    console.log('expr', typeof ast, ast)
     if (typeof ast == 'number') {
         return `ld reg0 0x${ast.toString(16).padStart(2, '0')}\n`;
     } else if (typeof ast == 'string') {
